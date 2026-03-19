@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-root-secret"
+version = "0.1.0"
+description = "Django package for managing a single root encryption key and decrypting embedded secrets."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cryptography>=42.0.0",
+    "Django>=5.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["django_root_secret*"]

@@ -1,0 +1,24 @@
+from django.core.management.base import BaseCommand, CommandError
+
+from django_root_secret.crypto import generate_root_encryption_key
+from django_root_secret.env import env_file_path, write_root_key_file
+
+
+class Command(BaseCommand):
+    help = "Create an <env>.env file containing a single ROOT_ENCRYPTION_KEY."
+
+    def add_arguments(self, parser):
+        parser.add_argument("--env", required=True, help="Environment name used for the <env>.env file.")
+
+    def handle(self, *args, **options):
+        try:
+            path = env_file_path(options["env"])
+        except ValueError as exc:
+            raise CommandError(str(exc)) from exc
+
+        root_key = generate_root_encryption_key()
+        try:
+            write_root_key_file(path, root_key)
+        except FileExistsError as exc:
+            raise CommandError(f"Environment file already exists: {path}") from exc
+        self.stdout.write(root_key)
