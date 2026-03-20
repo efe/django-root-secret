@@ -1,5 +1,7 @@
 # django-root-secret
 
+[![Tests](https://github.com/efe/django-root-secret/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/efe/django-root-secret/actions/workflows/tests.yml)
+
 `django-root-secret` is a Django package for managing one root encryption key per environment and decrypting encrypted literals at runtime.
 
 `django-root-secret` reduces the number of plaintext secrets you need to manage. Large `.env` files are a common source of configuration errors because variables can be missing, misnamed, outdated, or inconsistent across environments. This package keeps the env file minimal by storing only `ROOT_ENCRYPTION_KEY` there and encrypting the rest.
