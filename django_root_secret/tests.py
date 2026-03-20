@@ -13,7 +13,7 @@ from django_root_secret.secrets import get_secret
 
 
 class GenerateRootEncryptionKeyCommandTests(SimpleTestCase):
-    def test_creates_env_file_and_prints_key(self):
+    def test_creates_env_file_and_prints_key_and_location(self):
         with TemporaryDirectory() as temp_dir:
             output = StringIO()
             with mock.patch("pathlib.Path.cwd", return_value=Path(temp_dir)):
@@ -23,7 +23,33 @@ class GenerateRootEncryptionKeyCommandTests(SimpleTestCase):
             self.assertTrue(env_file.exists())
             content = env_file.read_text(encoding="utf-8")
             self.assertIn("ROOT_ENCRYPTION_KEY=", content)
-            self.assertTrue(output.getvalue().strip())
+            rendered_output = output.getvalue()
+            self.assertTrue(rendered_output.strip())
+            self.assertIn(str(env_file), rendered_output)
+            self.assertIn("Added development.env to", rendered_output)
+
+    def test_adds_env_file_to_gitignore_when_missing(self):
+        with TemporaryDirectory() as temp_dir:
+            output = StringIO()
+            gitignore_path = Path(temp_dir) / ".gitignore"
+            gitignore_path.write_text(".venv/\n", encoding="utf-8")
+
+            with mock.patch("pathlib.Path.cwd", return_value=Path(temp_dir)):
+                call_command("generate_root_encryption_key", env="development", stdout=output)
+
+            self.assertIn("development.env\n", gitignore_path.read_text(encoding="utf-8"))
+            self.assertIn("Added development.env to", output.getvalue())
+
+    def test_reports_when_env_file_is_already_gitignored(self):
+        with TemporaryDirectory() as temp_dir:
+            output = StringIO()
+            gitignore_path = Path(temp_dir) / ".gitignore"
+            gitignore_path.write_text("development.env\n", encoding="utf-8")
+
+            with mock.patch("pathlib.Path.cwd", return_value=Path(temp_dir)):
+                call_command("generate_root_encryption_key", env="development", stdout=output)
+
+            self.assertIn("already present", output.getvalue())
 
     def test_creates_env_file_with_private_permissions(self):
         with TemporaryDirectory() as temp_dir:

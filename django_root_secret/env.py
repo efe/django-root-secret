@@ -29,6 +29,26 @@ def env_file_path(env_name: str, base_dir: Path | None = None) -> Path:
     return directory / f"{normalized}.env"
 
 
+def ensure_path_is_gitignored(path: Path, gitignore_path: Path | None = None) -> bool:
+    target_gitignore = path.parent / ".gitignore" if gitignore_path is None else Path(gitignore_path)
+    entry = path.name
+
+    if target_gitignore.exists():
+        lines = target_gitignore.read_text(encoding="utf-8").splitlines()
+    else:
+        lines = []
+
+    normalized_entries = {line.strip() for line in lines}
+    if entry in normalized_entries:
+        return False
+
+    with target_gitignore.open("a", encoding="utf-8") as file_obj:
+        if lines and lines[-1].strip():
+            file_obj.write("\n")
+        file_obj.write(f"{entry}\n")
+    return True
+
+
 def write_root_key_file(path: Path, root_key: str) -> None:
     content = f"{FILE_COMMENT}{ROOT_ENCRYPTION_KEY_FILE_VAR}={root_key}\n"
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
