@@ -39,13 +39,21 @@ This creates `development.env` in the current working directory with only:
 ROOT_ENCRYPTION_KEY=...
 ```
 
+If `development.env` is not already ignored by Git, the command also adds it to `.gitignore`.
+
 Encrypt a plaintext secret using that file:
 
 ```bash
 python manage.py encrypt_secret --env development --value "my-db-password"
 ```
 
-Use the encrypted output in code and decrypt it with `ROOT_ENCRYPTION_KEY` from the runtime environment:
+At runtime, make `ROOT_ENCRYPTION_KEY` available through your environment or deployment secret manager:
+
+```bash
+export ROOT_ENCRYPTION_KEY="..."
+```
+
+Then use the encrypted output in code:
 
 ```python
 from django_root_secret import get_secret
