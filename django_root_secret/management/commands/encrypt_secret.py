@@ -1,3 +1,5 @@
+from getpass import getpass
+
 from django.core.management.base import BaseCommand, CommandError
 
 from django_root_secret.crypto import (
@@ -12,7 +14,6 @@ class Command(BaseCommand):
     help = "Encrypt a plaintext value using ROOT_ENCRYPTION_KEY from <env>.env."
 
     def add_arguments(self, parser):
-        parser.add_argument("--value", required=True, help="Plaintext value to encrypt.")
         parser.add_argument("--env", required=True, help="Environment name used for the <env>.env file.")
 
     def handle(self, *args, **options):
@@ -22,5 +23,9 @@ class Command(BaseCommand):
         except (ValueError, MissingRootEncryptionKeyError, InvalidRootEncryptionKeyError) as exc:
             raise CommandError(str(exc)) from exc
 
-        encrypted_value = encrypt_value(options["value"], root_key)
+        plaintext_value = getpass("Value to encrypt: ")
+        if not plaintext_value:
+            raise CommandError("Plaintext value cannot be empty.")
+
+        encrypted_value = encrypt_value(plaintext_value, root_key)
         self.stdout.write(encrypted_value)
