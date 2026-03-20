@@ -1,0 +1,61 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Validate tag matches package version
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import re
+          import sys
+
+          ref = os.environ["GITHUB_REF_NAME"]
+          if not ref.startswith("v"):
+              raise SystemExit(f"Expected tag starting with 'v', got: {ref}")
+
+          expected_version = ref[1:]
+          pyproject = pathlib.Path("pyproject.toml").read_text(encoding="utf-8")
+          match = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.MULTILINE)
+          if match is None:
+              raise SystemExit("Could not find project.version in pyproject.toml")
+
+          package_version = match.group(1)
+          if package_version != expected_version:
+              raise SystemExit(
+                  f"Tag version '{expected_version}' does not match package version '{package_version}'"
+              )
+
+          print(f"Publishing version {package_version}")
+          PY
+
+      - name: Build distributions
+        run: uv build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
