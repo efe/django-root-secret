@@ -8,6 +8,12 @@
 
 ## Installation
 
+Install the package:
+
+```bash
+pip install django-root-secret
+```
+
 Add the app to `INSTALLED_APPS`:
 
 ```python
