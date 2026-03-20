@@ -60,3 +60,7 @@ from django_root_secret import get_secret
 
 DATABASE_PASSWORD = get_secret("gAAAAAB...")
 ```
+
+## Note
+
+This package started as an internal tool at [Hipo](https://hipolabs.com), and it brings back memories of a team I still appreciate deeply. 🦛
