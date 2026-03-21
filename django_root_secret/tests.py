@@ -75,14 +75,20 @@ class EncryptSecretCommandTests(SimpleTestCase):
             call_command_output = StringIO()
             with mock.patch("pathlib.Path.cwd", return_value=Path(temp_dir)):
                 call_command("generate_root_encryption_key", env="production")
-                call_command(
-                    "encrypt_secret",
-                    env="production",
-                    value="super-secret",
-                    stdout=call_command_output,
-                )
+                with mock.patch(
+                    "django_root_secret.management.commands.encrypt_secret.getpass",
+                    return_value="super-secret",
+                ):
+                    call_command(
+                        "encrypt_secret",
+                        env="production",
+                        stdout=call_command_output,
+                    )
 
-            encrypted_value = call_command_output.getvalue().strip()
+            output_lines = call_command_output.getvalue().splitlines()
+            self.assertIn("Plaintext: su********et", output_lines)
+
+            encrypted_value = output_lines[-1]
             env_file = Path(temp_dir) / "production.env"
             root_key = [
                 line.split("=", 1)[1]
@@ -95,7 +101,18 @@ class EncryptSecretCommandTests(SimpleTestCase):
         with TemporaryDirectory() as temp_dir:
             with mock.patch("pathlib.Path.cwd", return_value=Path(temp_dir)):
                 with self.assertRaises(CommandError):
-                    call_command("encrypt_secret", env="missing", value="value")
+                    call_command("encrypt_secret", env="missing")
+
+    def test_raises_when_prompted_value_is_empty(self):
+        with TemporaryDirectory() as temp_dir:
+            with mock.patch("pathlib.Path.cwd", return_value=Path(temp_dir)):
+                call_command("generate_root_encryption_key", env="production")
+                with mock.patch(
+                    "django_root_secret.management.commands.encrypt_secret.getpass",
+                    return_value="",
+                ):
+                    with self.assertRaisesMessage(CommandError, "Plaintext value cannot be empty."):
+                        call_command("encrypt_secret", env="production")
 
 
 class GetSecretTests(SimpleTestCase):
