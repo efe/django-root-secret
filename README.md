@@ -41,7 +41,7 @@ ROOT_ENCRYPTION_KEY=...
 
 If `development.env` is not already ignored by Git, the command also adds it to `.gitignore`.
 
-Encrypt a plaintext secret using that file:
+Encrypt a plaintext secret using that file and bring up a prompt to paste the secret:
 
 ```bash
 python manage.py encrypt_secret --env development
