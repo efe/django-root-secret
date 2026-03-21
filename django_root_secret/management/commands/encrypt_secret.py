@@ -10,6 +10,12 @@ from django_root_secret.crypto import (
 from django_root_secret.env import env_file_path, load_root_key_from_env_file
 
 
+def mask_plaintext_value(plaintext_value: str) -> str:
+    if len(plaintext_value) <= 4:
+        return "*" * len(plaintext_value)
+    return f"{plaintext_value[:2]}{'*' * (len(plaintext_value) - 4)}{plaintext_value[-2:]}"
+
+
 class Command(BaseCommand):
     help = "Encrypt a plaintext value using ROOT_ENCRYPTION_KEY from <env>.env."
 
@@ -27,5 +33,6 @@ class Command(BaseCommand):
         if not plaintext_value:
             raise CommandError("Plaintext value cannot be empty.")
 
+        self.stdout.write(f"Plaintext: {mask_plaintext_value(plaintext_value)}")
         encrypted_value = encrypt_value(plaintext_value, root_key)
-        self.stdout.write(encrypted_value)
+        self.stdout.write(f"Encrypted: {encrypted_value}")

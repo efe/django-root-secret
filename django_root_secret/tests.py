@@ -85,7 +85,10 @@ class EncryptSecretCommandTests(SimpleTestCase):
                         stdout=call_command_output,
                     )
 
-            encrypted_value = call_command_output.getvalue().strip()
+            output_lines = call_command_output.getvalue().splitlines()
+            self.assertIn("Plaintext: su********et", output_lines)
+
+            encrypted_value = output_lines[-1]
             env_file = Path(temp_dir) / "production.env"
             root_key = [
                 line.split("=", 1)[1]
