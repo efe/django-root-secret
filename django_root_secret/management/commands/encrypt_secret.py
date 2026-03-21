@@ -35,4 +35,4 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Plaintext: {mask_plaintext_value(plaintext_value)}")
         encrypted_value = encrypt_value(plaintext_value, root_key)
-        self.stdout.write(f"Encrypted: {encrypted_value}")
+        self.stdout.write(encrypted_value)
