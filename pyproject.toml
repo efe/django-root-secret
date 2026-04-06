@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-root-secret"
-version = "0.2.0"
+version = "0.2.1"
 description = "Django package for managing a single root encryption key and decrypting embedded secrets."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "cryptography>=42.0.0",
     "Django>=5.1",
